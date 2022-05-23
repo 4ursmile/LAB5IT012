@@ -93,8 +93,8 @@ main:
 	addi $t1, $zero, 0
 	addi $s1, $zero, 0 # s1  = tong mang
 	lw $t2, 0($s0) #t2 = A[i]
-	addu $s2, $zero, $t2 # s2 = max
-	addu $s3, $zero, $t2  #s3 = min
+	addi $s2, $zero, 0 # s2 = max
+	addu $s3, $t2, $zero  #s3 = min
 	addi $s4, $zero, 0  #s4 = so so le
 	addi $s5, $zero, 0  #s5 = so so chan
 	FOR2:
@@ -102,13 +102,14 @@ main:
 		beq $t2,$0 ENDFOR2 #if (t2 == 0) break
 		lw $t2, 0($s0) #t2 = A[i]
 		add $s1, $s1, $t2 #s1 = s1 + t2 tinh tong
-		slt $t3, $s2, $t2 # t3 = s2<t1?1:0
-		beq $t3,$0 EndMax #if (t3 != 0)
-			addi $s2, $t2,0 
-			j EndMinMax
-		EndMax:
-			addi $s3, $t2,0
-		EndMinMax:
+		slt $t3, $s2, $t2 #t3 = s2<t2?1:0
+		beq $t3, $0 ToMin
+			addi $s2, $t2, 0
+		ToMin:
+		slt $t3, $t2, $s3 #t3 = t2<s3?1:0
+		beq $t3, $0 ToChan
+			addi $s3, $t2, 0
+		ToChan:
 		andi $t2, $t2, 1   #t2 = t2%2 == 0? 0:1
 		bne $t2, $0 TinhLe
 			addi $s4,$s4,1
@@ -175,7 +176,6 @@ main:
 	li $v0, 4
 	la $a0, xuonghang
 	syscall #xuong dong
-		
 		
 		
 		
