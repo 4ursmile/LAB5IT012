@@ -9,13 +9,12 @@
 	 haicham: .asciiz ": "
 	 space: .asciiz " "
 	 nhapsoam: .asciiz "So ban vua nhap <=0, moi ban nhap lai: "
-	 inmang: .asciiz " A[] =  "
+	 inmang: .asciiz "After sorted \n A[] =  "
 	 xuonghang: .asciiz "\n"
-	 Tong: .asciiz "Tong la: "
-	 Max: .asciiz "So lon nhat la: "
-	 Min: .asciiz "So be nhat la: "
-	 Sochan: .asciiz "So phan tu chan la: "
-	 Sole: .asciiz "So phan tu le la: "
+	 bubbleprint: .asciiz "Thuc thien bubble sort \n"
+	 insertprint: .asciiz "Thuc hien insertion sort \n"
+	 selectprint: .asciiz "Thuc hien selecttion sort \n"
+	 luachon: .asciiz "Moi ban lua chon cach sort: \n 1:Bubble sort. \n 2: Insertion sort. \n 3: Selection sort. \n (cac so khac mac dinh la selection sort) \n"
 	 
 .text 
 main:
@@ -51,9 +50,9 @@ main:
 	la $s0, Array 
 	addi $t1, $zero, 0
 	#Nhap gia tri cho tung phan tu 
-	FOR: 
+	FORR: 
 		slt $t2,$t1, $t0 # t2 = t1<t0?1:0
-		beq $t2,$0 ENDFOR #if (t2 == 0) break
+		beq $t2,$0 ENDFORR #if (t2 == 0) break
 		li $v0, 4 # write string
 		la $a0, nhapso
 		syscall
@@ -87,98 +86,160 @@ main:
 		sw $s1, ($s2)	#Arr[i] = s1;
 		
 		addi $t1,$t1,1
+		j FORR
+	ENDFORR:
+	li $v0, 4 # write string
+	la $a0, luachon	
+	syscall
+	li $v0, 5 #read integer
+	syscall
+	addi $t1, $v0, 0 #t0 = v0 (n = input())
+	addi $t2, $0, 1
+	beq $t1,$t2, BUBBLESORT
+	addi $t2,$0,2
+	beq $t1,$t2, INSERTSORT
+	
+	j SELECTSORT
+	
+	#BUBBLESORT
+	BUBBLESORT:
+	
+	li $v0, 4 # write string
+	la $a0, bubbleprint	
+	syscall
+	
+	addi $t1, $0, 0
+	subi $s1, $t0, 1
+	#for (i,0,n-1)
+	FOR:
+		slt $t3,$t1,$s1 # t3 = t1<s1?1:0
+		beq $t3, $0, ENDFOR
+		addi $t2, $zero, 0
+		sub $s2, $t0, $t1
+		subi $s2, $s2, 1  # size =  n-i-1
+		# print Arr[i]
+		#for(j,0,n-i-1)
+		FOR2:
+			slt $t3, $t2, $s2
+			beq $t3, $0, ENDFOR2
+			sll $t3, $t2, 2
+			add $t3, $t3, $s0 # t3 = pointer of A[j]
+			lw $s3, ($t3) # s3 = A[j]
+			lw $s4, 4($t3) # s4 = A[j+1]
+			slt $t4, $s3, $s4 # t4 = s3 < s4? 1:0
+			bne $t4, $0, ENDSWAP #if (A[i] > A[i+1]) swap
+			sw $s4, ($t3)
+			sw $s3, 4($t3)
+			ENDSWAP:
+			addi $t2, $t2,1
+			j FOR2
+		ENDFOR2:
+		addi $t1, $t1, 1
 		j FOR
 	ENDFOR:
-	#Tinh cac yeu cau cua bai toan
-	addi $t1, $zero, 0
-	addi $s1, $zero, 0 # s1  = tong mang
-	lw $t2, 0($s0) #t2 = A[i]
-	addi $s2, $zero, 0 # s2 = max
-	addu $s3, $t2, $zero  #s3 = min
-	addi $s4, $zero, 0  #s4 = so so le
-	addi $s5, $zero, 0  #s5 = so so chan
-	FOR2:
-		slt $t2,$t1, $t0 # t2 = t1<t0?1:0
-		beq $t2,$0 ENDFOR2 #if (t2 == 0) break
-		lw $t2, 0($s0) #t2 = A[i]
-		add $s1, $s1, $t2 #s1 = s1 + t2 tinh tong
-		slt $t3, $s2, $t2 #t3 = s2<t2?1:0
-		beq $t3, $0 ToMin
-			addi $s2, $t2, 0
-		ToMin:
-		slt $t3, $t2, $s3 #t3 = t2<s3?1:0
-		beq $t3, $0 ToChan
-			addi $s3, $t2, 0
-		ToChan:
-		andi $t2, $t2, 1   #t2 = t2%2 == 0? 0:1
-		bne $t2, $0 TinhLe
-			addi $s4,$s4,1
-			j EndChanLe
-		TinhLe:
-			addi $s5,$s5,1
-		EndChanLe:
-		addi $s0, $s0, 4 # Arr+=4
-		addi $t1, $t1,1 # i++
-		j FOR2
-	ENDFOR2:
-	#In Cac yeu cau:
-	#Tong
-	li $v0, 4
-	la $a0, Tong
-	syscall # in dong chu thich
-	li $v0, 1
-	addi $a0, $s1, 0
-	syscall #in tong 
-	li $v0, 4
-	la $a0, xuonghang
-	syscall #xuong dong
+	j PRINTARRAY
+	#InSertSort
+	INSERTSORT:
+	li $v0, 4 # write string
+	la $a0, insertprint	
+	syscall
 	
-	#In max
-	li $v0, 4
-	la $a0, Max
-	syscall # in dong chu thich
-	li $v0, 1
-	addi $a0, $s2, 0
-	syscall #in max
-	li $v0, 4
-	la $a0, xuonghang
-	syscall #xuong dong
+	addi $t1, $0, 0 # i = 0
+	subi $s1, $t0, 1 # n-1
+	#for(i,0,n-1)
+	IFOR:
+		slt $t3,$t1,$s1 # t3 = t1<s1?1:0
+		beq $t3, $0, IENDFOR
+		addi $t2, $t1, 1 # j = i+1
+		addi $s2, $t0, 0 #s2 = n
+		#for(i,i+1,n)
+		IFOR2:
+			slt $t3, $t2, $s2
+			beq $t3, $0, IENDFOR2
+			sll $t3, $t1, 2
+			add $t3, $t3, $s0  # t3 = pointer of A[i]
+			lw $s3, ($t3) #s3 = A[i]
+			sll $t4, $t2, 2
+			add $t4, $t4, $s0 # t4 = pointer of A[j]
+			lw $s4, ($t4) #s4 = A[j]
+			slt $t5, $s4, $s3 # t5 = s4<s3?1:0
+			beq $t5, $0, IENDSWAP #if (s4>s3) swap(s4,s3)
+			sw $s3, ($t4)
+			sw $s4, ($t3)
+			IENDSWAP:
+			addi $t2, $t2,1
+			j IFOR2
+		IENDFOR2:
+		addi $t1, $t1, 1
+		j IFOR
+	IENDFOR:
+	j PRINTARRAY
+	#SelectionSort
+	SELECTSORT:
+	li $v0, 4 # write string
+	la $a0, selectprint	
+	syscall
 	
-	#in min
-	li $v0, 4
-	la $a0, Min
-	syscall # in dong chu thich
-	li $v0, 1
-	addi $a0, $s3, 0
-	syscall #in min 
-	li $v0, 4
-	la $a0, xuonghang
-	syscall #xuong dong
-	
-	#in so so chan
-	li $v0, 4
-	la $a0, Sochan
-	syscall # in dong chu thich
-	li $v0, 1
-	addi $a0, $s4, 0
-	syscall #in so so chan 
-	li $v0, 4
-	la $a0, xuonghang
-	syscall #xuong dong
-	
-	#in so so le
-	li $v0, 4
-	la $a0, Sole
-	syscall # in dong chu thich
-	li $v0, 1
-	addi $a0, $s5, 0
-	syscall #in so so le 
-	li $v0, 4
-	la $a0, xuonghang
-	syscall #xuong dong
+	addi $t1, $0, 0 # i = 0
+	subi $s1, $t0, 1 # n-1
+	SFOR:
+		slt $t3,$t1,$s1 # t3 = t1<s1?1:0
+		beq $t3, $0, SENDFOR
+		addi $t2, $t1, 1 # j = i+1
+		addi $s2, $t0, 0 #s2 = n
 		
-		
-		
+		sll $t3, $t1, 2
+		add $t3, $t3, $s0  # t3 = pointer of A[i]
+		lw $s3, ($t3) #s3 = A[i]
+		# Let s4 = s3 is a minimum value of A[i:n]
+		addi $s4, $s3, 0 
+		addi $t4, $t3,0
+		#for(i,i+1,n)
+		SFOR2:
+			slt $t5, $t2, $s2
+			beq $t5, $0, SENDFOR2
+			#find minimum vakue of A[i:n]
+			sll $t5, $t2, 2
+			add $t5, $t5, $s0 # t5 = pointer of A[j]
+			lw $s5, ($t5) #s5 = A[j]
+			slt $t6, $s5, $s4 # t6 = s5<s4?1:0
+			beq $t6, $0, SENDSWAP #if (s4>s5) update s4
+			addi $s4 , $s5,0
+			addi $t4, $t5,0
+			SENDSWAP:
+			addi $t2, $t2,1
+			j SFOR2
+		SENDFOR2:
+		#swap A[i] and minimum value of A[i:n]
+		sw $s3, ($t4)
+		sw $s4, ($t3) 
+		addi $t1, $t1, 1
+		j SFOR
+	SENDFOR:
+	j PRINTARRAY
+	#print array	
+	PRINTARRAY:
+
+	li $v0, 4
+	la $a0, inmang
+	syscall
+	addi $t1, $0, 0
+	FORP:
+		slt $t2, $t1, $t0 # t2 = t1<t0?1:0
+		beq $t2, $0, ENDFORP
+		 # print Arr[i]
+		lw $t2, ($s0)
+		li $v0, 1
+		addi $a0, $t2, 0
+		syscall
+		#print space
+		li $v0, 4
+		la $a0, space
+		syscall
+		addi $s0, $s0, 4
+		addi $t1, $t1, 1
+		j FORP
+	ENDFORP:
 		
 		
 	
