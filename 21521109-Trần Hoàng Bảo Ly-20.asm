@@ -102,6 +102,10 @@ main:
 	j SELECTSORT
 	
 	#BUBBLESORT
+	#Ma Gia mang n phan tu A[0:n-1]
+	# for i = 0 to n-2
+	#	for j = 0 to n-i-1
+	#		if (A[i] > A[j]) swap(A[i], A[j])
 	BUBBLESORT:
 	
 	li $v0, 4 # write string
@@ -138,7 +142,10 @@ main:
 		j FOR
 	ENDFOR:
 	j PRINTARRAY
-	#InSertSort
+	#InsertSort
+	#for i = 0 to n-2
+	#for j = i+1 to n-1
+	#if (A[i]>A[j]) swap(A[i],A[j])
 	INSERTSORT:
 	li $v0, 4 # write string
 	la $a0, insertprint	
@@ -175,6 +182,11 @@ main:
 	IENDFOR:
 	j PRINTARRAY
 	#SelectionSort
+	#for i = 0 to n-2
+	#	imin = i;
+	#	for j = i+1 to n-1
+	#		if (A[j] < A[imin]) imin = j
+	#	swap(A[i],A[imin])
 	SELECTSORT:
 	li $v0, 4 # write string
 	la $a0, selectprint	
@@ -219,7 +231,6 @@ main:
 	j PRINTARRAY
 	#print array	
 	PRINTARRAY:
-
 	li $v0, 4
 	la $a0, inmang
 	syscall
